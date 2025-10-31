@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 use chrono::{FixedOffset, Local, Utc};
 use dotenv::dotenv;
@@ -13,6 +13,8 @@ enum BotMessage {
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     dotenv().ok();
+
+    let last_stock_num = Arc::new(Mutex::<oci::StockNum>::new(-1));
 
     tracing_subscriber::registry()
         .with(
@@ -41,8 +43,38 @@ async fn main() -> anyhow::Result<()> {
             }
         };
 
+        // 读取
+        {
+            let lsn = match last_stock_num.lock() {
+                Ok(v) => v,
+                Err(e) => {
+                    tracing::error!("❌ 读取共享状态失败：{e}");
+                    sleep(cfg.check_duration()).await;
+                    continue;
+                }
+            };
+
+            if *lsn == stock {
+                tracing::info!("🌙 库存未变");
+                sleep(cfg.check_duration()).await;
+                continue;
+            }
+        }
+
+        // 写入
+        {
+            match last_stock_num.lock() {
+                Ok(mut v) => *v = stock,
+                Err(e) => {
+                    tracing::error!("❌ 写入共享状态失败：{e}");
+                    sleep(cfg.check_duration()).await;
+                    continue;
+                }
+            };
+        }
+
         if stock < cfg.skip_notify_stock_num {
-            tracing::info!("⚠️ 库存为0, 稍后重试");
+            tracing::info!("☀️ 库存不足, 稍后重试");
             sleep(cfg.check_duration()).await;
             continue;
         }

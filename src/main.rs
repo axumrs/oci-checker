@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use chrono::Local;
+use chrono::{FixedOffset, Local, Utc};
 use dotenv::dotenv;
 use oci_checker::{Config, oci, tg_bot};
 use tracing_subscriber::{layer::SubscriberExt as _, util::SubscriberInitExt as _};
@@ -57,7 +57,12 @@ async fn main() -> anyhow::Result<()> {
 }
 
 fn build_msg(bot_msg: BotMessage) -> String {
-    let now = Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
+    let now = match FixedOffset::east_opt(8 * 3600) {
+        Some(v) => Utc::now().with_timezone(&v),
+        None => Local::now().fixed_offset(),
+    }
+    .format("%Y-%m-%d %H:%M:%S")
+    .to_string();
 
     let msg = match bot_msg {
         BotMessage::GetStockFailed(e) => format!("❌ 获取库存信息失败：{e}"),

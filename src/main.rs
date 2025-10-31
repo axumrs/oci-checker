@@ -7,7 +7,7 @@ use tracing_subscriber::{layer::SubscriberExt as _, util::SubscriberInitExt as _
 
 enum BotMessage {
     Stock(oci::StockNum),
-    GetStockFailed,
+    GetStockFailed(String),
 }
 
 #[tokio::main]
@@ -32,7 +32,7 @@ async fn main() -> anyhow::Result<()> {
                 if cfg.if_get_stock_failed_send_msg {
                     tokio::spawn(send_bot_msg(
                         cfg.clone(),
-                        build_msg(BotMessage::GetStockFailed),
+                        build_msg(BotMessage::GetStockFailed(e.to_string())),
                     ));
                 }
                 tracing::error!("❌ 获取库存失败：{e}");
@@ -60,7 +60,7 @@ fn build_msg(bot_msg: BotMessage) -> String {
     let now = Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
 
     let msg = match bot_msg {
-        BotMessage::GetStockFailed => "❌ 获取库存信息失败".to_string(),
+        BotMessage::GetStockFailed(e) => format!("❌ 获取库存信息失败：{e}"),
         BotMessage::Stock(stock) => {
             if stock <= 0 {
                 "无库存".to_string()

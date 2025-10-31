@@ -1,3 +1,4 @@
+use anyhow::anyhow;
 use lazy_static::lazy_static;
 use regex::Regex;
 
@@ -20,10 +21,16 @@ pub async fn get_in_stock(cfg: &Config) -> anyhow::Result<StockNum> {
         Ok(v) => v,
         Err(e) => return Err(e.into()),
     };
-    let caps = reg.captures(&body).unwrap();
+    let caps = match reg.captures(&body) {
+        Some(v) => v,
+        None => return Err(anyhow!("无法匹配正则")),
+    };
     // tracing::debug!("caps: {caps:?}");
 
-    let stock = caps.get(1).unwrap().as_str();
+    let stock = match caps.get(1) {
+        Some(v) => v.as_str(),
+        None => return Err(anyhow!("无法获取正则匹配项")),
+    };
     // tracing::debug!("stock: {stock}");
 
     stock.parse::<StockNum>().map_err(|e| e.into())

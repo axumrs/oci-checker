@@ -4,7 +4,7 @@ use crate::oci;
 
 pub struct Config {
     pub url: String,
-    pub proxy: Option<String>,
+    pub proxies: Option<String>,
     pub request_timeout: u64,
     pub tg_chat_id: String,
     pub tg_bot_token: String,
@@ -17,7 +17,7 @@ pub struct Config {
 impl Config {
     pub fn from_env() -> anyhow::Result<Self> {
         let url = env::var("URL")?;
-        let proxy = match env::var("PROXY") {
+        let proxies = match env::var("PROXIES") {
             Err(_) => None,
             Ok(v) => {
                 if v.is_empty() {
@@ -37,7 +37,7 @@ impl Config {
 
         Ok(Self {
             url,
-            proxy,
+            proxies,
             request_timeout,
             tg_chat_id,
             tg_bot_token,
@@ -57,5 +57,35 @@ impl Config {
 
     pub fn check_duration(&self) -> u64 {
         rand::random_range(self.check_duration_min..=self.check_duration_max)
+    }
+
+    pub fn proxies(&self) -> Option<Vec<&str>> {
+        if let Some(proxies_str) = &self.proxies {
+            return Some(proxies_str.split(",").collect());
+        }
+        None
+    }
+
+    pub fn proxy(&self) -> Option<&str> {
+        if let Some(proxies) = self.proxies() {
+            return proxies.get(rand::random_range(0..proxies.len())).copied();
+        }
+        None
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use dotenv::dotenv;
+
+    use super::*;
+
+    #[test]
+    fn test_get_proxy() {
+        dotenv().ok();
+
+        let cfg = Config::from_env().unwrap();
+        let proxy = cfg.proxy();
+        println!("{proxy:?}");
     }
 }

@@ -1,5 +1,5 @@
 URL='https://oci.ee/cart?fid=5' # 要监控的库存URL
-#PROXY='socks5://127.0.0.1:1080' # 代理
+#PROXIES='http://127.0.0.1:2081,http://127.0.0.1:3080' # 代理，多个代理使用英文逗号分割
 REQUEST_TIMEOUT=10 # 请求超时（秒）
 TG_CHAT_ID='<YOU TG CHAT ID>' # 接受通知的 CHAT ID，通常就是用户的 TG ID
 TG_BOT_TOKEN='<YOUR TG BOT TOKEN>' # TG 机器人 TOKEN

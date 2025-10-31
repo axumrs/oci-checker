@@ -6,7 +6,7 @@ use oci_checker::{Config, oci, tg_bot};
 use tracing_subscriber::{layer::SubscriberExt as _, util::SubscriberInitExt as _};
 
 enum BotMessage {
-    Stock(u32),
+    Stock(oci::StockNum),
     GetStockFailed,
 }
 
@@ -41,7 +41,7 @@ async fn main() -> anyhow::Result<()> {
             }
         };
 
-        if stock < 1 {
+        if stock < cfg.skip_notify_stock_num {
             tracing::info!("⚠️ 库存为0, 稍后重试");
             sleep(cfg.check_duration()).await;
             continue;
@@ -62,7 +62,7 @@ fn build_msg(bot_msg: BotMessage) -> String {
     let msg = match bot_msg {
         BotMessage::GetStockFailed => "❌ 获取库存信息失败".to_string(),
         BotMessage::Stock(stock) => {
-            if stock == 0 {
+            if stock <= 0 {
                 "无库存".to_string()
             } else {
                 format!("库存：{stock}")

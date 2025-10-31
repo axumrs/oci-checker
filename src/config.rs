@@ -1,5 +1,7 @@
 use std::env;
 
+use crate::oci;
+
 pub struct Config {
     pub url: String,
     pub proxy: Option<String>,
@@ -9,6 +11,7 @@ pub struct Config {
     pub check_duration_min: u64,
     pub check_duration_max: u64,
     pub if_get_stock_failed_send_msg: bool,
+    pub skip_notify_stock_num: oci::StockNum,
 }
 
 impl Config {
@@ -30,6 +33,7 @@ impl Config {
         let check_duration_min = env::var("CHECK_DURATION_MIN")?.parse()?;
         let check_duration_max = env::var("CHECK_DURATION_MAX")?.parse()?;
         let if_get_stock_failed_send_msg = env::var("IF_GET_STOCK_FAILED_SEND_MSG")?.parse()?;
+        let skip_notify_stock_num = env::var("SKIP_NOTIFY_STOCK_NUM")?.parse()?;
 
         Ok(Self {
             url,
@@ -40,6 +44,7 @@ impl Config {
             check_duration_min,
             check_duration_max,
             if_get_stock_failed_send_msg,
+            skip_notify_stock_num,
         })
     }
 

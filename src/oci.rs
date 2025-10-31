@@ -8,7 +8,9 @@ lazy_static! {
     static ref STOCK_REG: Result<Regex, regex::Error> = Regex::new(*STOCK_PAT);
 }
 
-pub async fn get_in_stock(cfg: &Config) -> anyhow::Result<u32> {
+pub type StockNum = i32;
+
+pub async fn get_in_stock(cfg: &Config) -> anyhow::Result<StockNum> {
     let cli = client::with_cfg(&cfg)?;
 
     let body = cli.get(&cfg.url).send().await?.text().await?;
@@ -24,5 +26,5 @@ pub async fn get_in_stock(cfg: &Config) -> anyhow::Result<u32> {
     let stock = caps.get(1).unwrap().as_str();
     // tracing::debug!("stock: {stock}");
 
-    stock.parse::<u32>().map_err(|e| e.into())
+    stock.parse::<StockNum>().map_err(|e| e.into())
 }

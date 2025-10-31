@@ -36,14 +36,14 @@ async fn main() -> anyhow::Result<()> {
                     ));
                 }
                 tracing::error!("❌ 获取库存失败：{e}");
-                sleep(cfg.check_duration).await;
+                sleep(cfg.check_duration()).await;
                 continue;
             }
         };
 
         if stock < 1 {
             tracing::info!("⚠️ 库存为0, 稍后重试");
-            sleep(cfg.check_duration).await;
+            sleep(cfg.check_duration()).await;
             continue;
         }
         tokio::spawn(send_bot_msg(
@@ -52,7 +52,7 @@ async fn main() -> anyhow::Result<()> {
         ));
 
         tracing::debug!("✅ 本次工作完成");
-        sleep(cfg.check_duration).await;
+        sleep(cfg.check_duration()).await;
     }
 }
 
@@ -80,6 +80,6 @@ fn sleep(duration: u64) -> tokio::time::Sleep {
 async fn send_bot_msg(cfg: Arc<Config>, msg: String) {
     if let Err(e) = tg_bot::send_msg(&*cfg, &msg).await {
         tracing::error!("❌ 推送TG消息失败：{e}");
-        sleep(cfg.check_duration).await;
+        sleep(cfg.check_duration()).await;
     }
 }

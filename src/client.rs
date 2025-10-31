@@ -2,12 +2,13 @@ use std::time;
 
 use reqwest::{Client, Proxy};
 
-use crate::Config;
+use crate::{Config, user_agent};
 
-pub fn new(user_agent: &str, timeout: u64, prx: &Option<String>) -> anyhow::Result<Client> {
+pub fn new(timeout: u64, prx: &Option<String>) -> anyhow::Result<Client> {
+    let ua = user_agent::get();
     let cb = Client::builder()
         .connect_timeout(time::Duration::from_secs(timeout))
-        .user_agent(user_agent);
+        .user_agent(ua);
     let cb = if let Some(prx) = prx {
         cb.proxy(proxy(&prx)?)
     } else {
@@ -18,7 +19,7 @@ pub fn new(user_agent: &str, timeout: u64, prx: &Option<String>) -> anyhow::Resu
 }
 
 pub fn with_cfg(cfg: &Config) -> anyhow::Result<Client> {
-    new(&cfg.user_agent, cfg.request_timeout, &cfg.proxy)
+    new(cfg.request_timeout, &cfg.proxy)
 }
 
 fn proxy(proxy: &str) -> anyhow::Result<Proxy> {

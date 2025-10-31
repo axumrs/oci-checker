@@ -1,6 +1,12 @@
+use lazy_static::lazy_static;
+use regex::Regex;
+
 use crate::{Config, client};
 
-const STOCK_PAT: &str = r#"<p class="card-text">库存： (\d+?)</p>"#;
+lazy_static! {
+    static ref STOCK_PAT: &'static str = r#"<p class="card-text">库存： (\d+?)</p>"#;
+    static ref STOCK_REG: Result<Regex, regex::Error> = Regex::new(*STOCK_PAT);
+}
 
 pub async fn get_in_stock(cfg: &Config) -> anyhow::Result<u32> {
     let cli = client::with_cfg(&cfg)?;
@@ -8,7 +14,10 @@ pub async fn get_in_stock(cfg: &Config) -> anyhow::Result<u32> {
     let body = cli.get(&cfg.url).send().await?.text().await?;
     // tracing::debug!("body: {body}");
 
-    let reg = regex::Regex::new(STOCK_PAT)?;
+    let reg = match &*STOCK_REG {
+        Ok(v) => v,
+        Err(e) => return Err(e.into()),
+    };
     let caps = reg.captures(&body).unwrap();
     // tracing::debug!("caps: {caps:?}");
 

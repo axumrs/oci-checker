@@ -1,0 +1,8 @@
+URL='https://oci.ee/cart?fid=5' # 要监控的库存URL
+#PROXY='socks5://127.0.0.1:1080' # 代理
+USER_AGENT='Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:144.0) Gecko/20100101 Firefox/144.0' # 用户代理
+REQUEST_TIMEOUT=10 # 请求超时（秒）
+TG_CHAT_ID='<YOU TG CHAT ID>' # 接受通知的 CHAT ID，通常就是用户的 TG ID
+TG_BOT_TOKEN='<YOUR TG BOT TOKEN>' # TG 机器人 TOKEN
+CHECK_DURATION=10 # 每次检查间隔时间（秒）
+IF_GET_STOCK_FAILED_SEND_MSG=true # 当获取库存失败时，是否发送 TG 通知

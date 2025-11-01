@@ -16,7 +16,7 @@ pub struct Config {
 
 impl Config {
     pub fn from_env() -> anyhow::Result<Self> {
-        let url = env::var("URL")?;
+        let url = env::var("URL").unwrap_or("https://oci.ee/cart?fid=5".into());
         let proxies = match env::var("PROXIES") {
             Err(_) => None,
             Ok(v) => {
@@ -27,13 +27,25 @@ impl Config {
                 }
             }
         };
-        let request_timeout = env::var("REQUEST_TIMEOUT")?.parse()?;
-        let tg_chat_id = env::var("TG_CHAT_ID")?;
-        let tg_bot_token = env::var("TG_BOT_TOKEN")?;
-        let check_duration_min = env::var("CHECK_DURATION_MIN")?.parse()?;
-        let check_duration_max = env::var("CHECK_DURATION_MAX")?.parse()?;
-        let if_get_stock_failed_send_msg = env::var("IF_GET_STOCK_FAILED_SEND_MSG")?.parse()?;
-        let skip_notify_stock_num = env::var("SKIP_NOTIFY_STOCK_NUM")?.parse()?;
+        let request_timeout = env::var("REQUEST_TIMEOUT").unwrap_or("10".into()).parse()?;
+        let tg_chat_id = env::var("TG_CHAT_ID").expect("请指定 `TG_CHAT_ID` 环境变量");
+        let tg_bot_token = env::var("TG_BOT_TOKEN").expect("请指定 `TG_BOT_TOKEN` 环境变量");
+        let check_duration_min = env::var("CHECK_DURATION_MIN")
+            .unwrap_or("6".into())
+            .parse()
+            .unwrap_or(6);
+        let check_duration_max = env::var("CHECK_DURATION_MAX")
+            .unwrap_or("12".into())
+            .parse()
+            .unwrap_or(12);
+        let if_get_stock_failed_send_msg = env::var("IF_GET_STOCK_FAILED_SEND_MSG")
+            .unwrap_or("true".into())
+            .parse()
+            .unwrap_or(true);
+        let skip_notify_stock_num = env::var("SKIP_NOTIFY_STOCK_NUM")
+            .unwrap_or("1".into())
+            .parse()
+            .unwrap_or(1);
 
         Ok(Self {
             url,
